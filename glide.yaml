@@ -1,0 +1,11 @@
+package: github.com/fidellr/edu_malay
+import:
+- package: github.com/labstack/echo
+  subpackages:
+  - middleware
+- package: github.com/sirupsen/logrus
+- package: gopkg.in/go-playground/validator.v9
+- package: github.com/globalsign/mgo
+  subpackages:
+  - bson
+- package: github.com/spf13/cobra
