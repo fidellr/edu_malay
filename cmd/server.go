@@ -84,15 +84,22 @@ func initConfig() {
 }
 
 func initEduMalayApplication(e *echo.Echo) {
-	// timeout := time.Duration(viper.GetInt("http.timeout")) * time.Second
+	var mongoDSN, mongoDatabase string
 	contextTimeout := time.Duration(viper.GetInt("context.timeout")) * time.Second
+	// timeout := time.Duration(viper.GetInt("http.timeout")) * time.Second
 	// defaultTransport := &http.Transport{
 	// 	MaxIdleConns:        viper.GetInt("http.max_idle_conns"),
 	// 	MaxIdleConnsPerHost: viper.GetInt("http.max_idle_conns_per_host"),
 	// 	IdleConnTimeout:     time.Duration(viper.GetInt("http.max_idle_conn_timeout")) * time.Second,
 	// }
 
-	mongoDSN := viper.GetString("mongo.dsn")
+	if viper.GetBool("debug") {
+		mongoDSN = viper.GetString("mongo.dsn")
+		mongoDatabase = viper.GetString("mongo.database")
+	} else {
+		mongoDSN = viper.GetString("mongo_prod.dsn")
+		mongoDatabase = viper.GetString("mongo_prod.database")
+	}
 
 	masterSession, err := mgo.Dial(mongoDSN)
 	if err != nil {
@@ -101,7 +108,6 @@ func initEduMalayApplication(e *echo.Echo) {
 
 	masterSession.SetSafe(&mgo.Safe{})
 
-	mongoDatabase := viper.GetString("mongo.database")
 	if mongoDatabase == "" {
 		logrus.Fatalln(errors.New("Please provide a mongo database name"))
 	}

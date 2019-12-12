@@ -1,7 +1,7 @@
 {
-  "debug": true,
+  "debug": false,
   "server": {
-    "address": ":7723"
+    "address": ":8080"
   },
   "context": {
     "timeout": 5
@@ -9,6 +9,10 @@
   "mongo": {
     "dsn": "mongodb://127.0.0.1:27017",
     "database": "edu_malay"
+  },
+  "mongo_prod": {
+    "dsn":"mongodb://urof6vil9oxnhucannob:Ki4LfGybTNDLolVIIppb@bm9ubph32uanvrr-mongodb.services.clever-cloud.com:27017/bm9ubph32uanvrr",
+    "database": "bm9ubph32uanvrr"
   },
   "http": {
     "max_idle_conns": 100,
