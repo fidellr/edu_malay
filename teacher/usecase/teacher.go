@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/fidellr/edu_malay/model"
 	"github.com/fidellr/edu_malay/utils"
 
-	model "github.com/fidellr/edu_malay/model/teacher"
+	teacherModel "github.com/fidellr/edu_malay/model/teacher"
 	"github.com/fidellr/edu_malay/teacher"
 )
 
@@ -22,7 +23,7 @@ func NewTeacherProfileUsecase(tr teacher.ProfileRepository, timeout time.Duratio
 	}
 }
 
-func (u *profileUsecase) Create(c context.Context, t *model.ProfileEntity) error {
+func (u *profileUsecase) Create(c context.Context, t *teacherModel.ProfileEntity) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
@@ -36,19 +37,19 @@ func (u *profileUsecase) Create(c context.Context, t *model.ProfileEntity) error
 	return u.profileRepo.Create(ctx, t)
 }
 
-func (u *profileUsecase) FindAll(c context.Context, filter *model.Filter) ([]*model.ProfileEntity, string, error) {
+func (u *profileUsecase) FindAll(c context.Context, filter *model.Filter) ([]*teacherModel.ProfileEntity, string, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
 	t, cursor, err := u.profileRepo.FindAll(ctx, filter)
 	if err != nil {
-		return make([]*model.ProfileEntity, 0), "", err
+		return make([]*teacherModel.ProfileEntity, 0), "", err
 	}
 
 	return t, cursor, nil
 }
 
-func (u *profileUsecase) GetByID(c context.Context, id string) (*model.ProfileEntity, error) {
+func (u *profileUsecase) GetByID(c context.Context, id string) (*teacherModel.ProfileEntity, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
@@ -60,7 +61,7 @@ func (u *profileUsecase) GetByID(c context.Context, id string) (*model.ProfileEn
 	return t, nil
 }
 
-func (u *profileUsecase) Update(c context.Context, id string, t *model.ProfileEntity) error {
+func (u *profileUsecase) Update(c context.Context, id string, t *teacherModel.ProfileEntity) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 

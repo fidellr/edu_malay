@@ -12,10 +12,12 @@ import (
 	"github.com/spf13/viper"
 
 	teacherProfileHTTP "github.com/fidellr/edu_malay/teacher/delivery/http"
-
 	teacherProfileRepo "github.com/fidellr/edu_malay/teacher/repository"
-
 	teacherProfileServices "github.com/fidellr/edu_malay/teacher/usecase"
+
+	clcProfileHTTP "github.com/fidellr/edu_malay/clc/delivery/http"
+	clcProfileRepo "github.com/fidellr/edu_malay/clc/repository"
+	clcProfileServices "github.com/fidellr/edu_malay/clc/usecase"
 )
 
 func init() {
@@ -65,12 +67,12 @@ func initEduMalayApplication(e *echo.Echo) {
 	// 	IdleConnTimeout:     time.Duration(viper.GetInt("http.max_idle_conn_timeout")) * time.Second,
 	// }
 
-	if viper.GetBool("debug") {
-		mongoDSN = viper.GetString("mongo.dsn")
-		mongoDatabase = viper.GetString("mongo.database")
-	} else {
+	if !viper.GetBool("debug") {
 		mongoDSN = viper.GetString("mongo_prod.dsn")
 		mongoDatabase = viper.GetString("mongo_prod.database")
+	} else {
+		mongoDSN = viper.GetString("mongo.dsn")
+		mongoDatabase = viper.GetString("mongo.database")
 	}
 
 	masterSession, err := mgo.Dial(mongoDSN)
@@ -87,6 +89,10 @@ func initEduMalayApplication(e *echo.Echo) {
 	tpRepo := teacherProfileRepo.NewTeacherMongo(masterSession, mongoDatabase)
 	tpServices := teacherProfileServices.NewTeacherProfileUsecase(tpRepo, contextTimeout)
 	teacherProfileHTTP.NewTeacherProfileHandler(e, tpServices)
+
+	clcRepo := clcProfileRepo.NewClcProfileMongo(masterSession, mongoDatabase)
+	clcServices := clcProfileServices.NewClcProfileUsecase(clcRepo, contextTimeout)
+	clcProfileHTTP.NewClcProfileHandler(e, clcServices)
 	// userRepo := _mongoRepository.NewUserMongo(
 	// 	_mongoRepository.UserSession(masterSession),
 	// 	_mongoRepository.UserDBName(mongoDatabase),

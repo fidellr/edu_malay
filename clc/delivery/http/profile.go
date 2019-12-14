@@ -5,32 +5,32 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fidellr/edu_malay/model"
-	teacherModel "github.com/fidellr/edu_malay/model/teacher"
-	"github.com/fidellr/edu_malay/teacher"
-	"github.com/fidellr/edu_malay/utils"
 	"github.com/labstack/echo"
+
+	"github.com/fidellr/edu_malay/clc"
+	"github.com/fidellr/edu_malay/model"
+	clcModel "github.com/fidellr/edu_malay/model/clc"
+	"github.com/fidellr/edu_malay/utils"
 )
 
 type Handler struct {
-	service teacher.ProfileUsecase
+	service clc.ProfileUsecase
 }
 
-func NewTeacherProfileHandler(e *echo.Echo, service teacher.ProfileUsecase) {
+func NewClcProfileHandler(e *echo.Echo, service clc.ProfileUsecase) {
 	handler := &Handler{
 		service,
 	}
 
-	e.GET("/teachers", handler.FindAll)
-	e.GET("/teacher/:id", handler.GetByID)
-	e.POST("/teacher", handler.Create)
-	e.PUT("/teacher/:id", handler.Update)
+	e.GET("/clcs", handler.FindAll)
+	e.GET("/clc/:id", handler.GetByID)
+	e.POST("/clc", handler.Create)
+	e.PUT("/clc/:id", handler.Update)
 }
 
 func (h *Handler) FindAll(c echo.Context) error {
 	var num int
 	var err error
-
 	ctx := c.Request().Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -48,14 +48,13 @@ func (h *Handler) FindAll(c echo.Context) error {
 		Cursor: c.QueryParam("cursor"),
 	}
 
-	teachers, nextCursor, err := h.service.FindAll(ctx, filter)
+	clcs, nextCursor, err := h.service.FindAll(ctx, filter)
 	if err != nil {
 		return utils.ConstraintErrorf("%s", err.Error())
 	}
 
 	c.Response().Header().Set("X-Cursor", nextCursor)
-
-	return c.JSON(http.StatusOK, teachers)
+	return c.JSON(http.StatusOK, clcs)
 }
 
 func (h *Handler) Create(c echo.Context) error {
@@ -64,12 +63,12 @@ func (h *Handler) Create(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	t := new(teacherModel.ProfileEntity)
-	if err := c.Bind(t); err != nil {
+	clc := new(clcModel.ProfileEntity)
+	if err := c.Bind(clc); err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}
 
-	err := h.service.Create(ctx, t)
+	err := h.service.Create(ctx, clc)
 	if err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}
@@ -83,12 +82,12 @@ func (h *Handler) GetByID(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	t, err := h.service.GetByID(ctx, c.Param("id"))
+	clc, err := h.service.GetByID(ctx, c.Param("id"))
 	if err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}
 
-	return c.JSON(utils.GetStatusCode(err), t)
+	return c.JSON(utils.GetStatusCode(err), clc)
 }
 
 func (h *Handler) Update(c echo.Context) error {
@@ -97,12 +96,12 @@ func (h *Handler) Update(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	t := new(teacherModel.ProfileEntity)
-	if err := c.Bind(t); err != nil {
+	clc := new(clcModel.ProfileEntity)
+	if err := c.Bind(clc); err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}
 
-	err := h.service.Update(ctx, c.Param("id"), t)
+	err := h.service.Update(ctx, c.Param("id"), clc)
 	if err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/fidellr/edu_malay/model"
 	"github.com/fidellr/edu_malay/model/teacher"
 	"github.com/fidellr/edu_malay/utils"
 	"github.com/globalsign/mgo"
@@ -37,12 +38,12 @@ func (r *TeacherMongo) Create(ctx context.Context, t *teacher.ProfileEntity) err
 	return nil
 }
 
-func (r *TeacherMongo) FindAll(ctx context.Context, filter *teacher.Filter) ([]*teacher.ProfileEntity, string, error) {
-	// var teachers []*teacher.ProfileEntity
-	teachers := make([]*teacher.ProfileEntity, 0)
-	query := make(bson.M)
+func (r *TeacherMongo) FindAll(ctx context.Context, filter *model.Filter) ([]*teacher.ProfileEntity, string, error) {
 	sess := r.Session.Clone()
 	defer sess.Close()
+
+	teachers := make([]*teacher.ProfileEntity, 0)
+	query := make(bson.M)
 
 	if filter.Cursor != "" {
 		createdAt, err := utils.DecodeTime(filter.Cursor)
@@ -61,16 +62,16 @@ func (r *TeacherMongo) FindAll(ctx context.Context, filter *teacher.Filter) ([]*
 		return teachers, "", nil
 	}
 
-	lastUsers := teachers[len(teachers)-1]
-	nextCursors := utils.EncodeTime(lastUsers.CreatedAt)
+	lastData := teachers[len(teachers)-1]
+	nextCursors := utils.EncodeTime(lastData.CreatedAt)
 
 	return teachers, nextCursors, nil
 }
 
 func (r *TeacherMongo) GetByID(ctx context.Context, id string) (*teacher.ProfileEntity, error) {
-	t := new(teacher.ProfileEntity)
 	sess := r.Session.Clone()
 	defer sess.Close()
+	t := new(teacher.ProfileEntity)
 
 	idBson := bson.ObjectIdHex(id)
 	err := sess.DB(r.DBName).C(teacherCollectionName).Find(bson.M{"_id": idBson}).One(t)
