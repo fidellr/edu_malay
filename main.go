@@ -8,6 +8,7 @@ import (
 
 	"github.com/globalsign/mgo"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
@@ -111,6 +112,10 @@ func main() {
 	echoInstance := echo.New()
 	echoInstance.Server.ReadTimeout = time.Duration(viper.GetInt("http.server_read_timeout")) * time.Second
 	echoInstance.Server.WriteTimeout = time.Duration(viper.GetInt("http.server_write_timeout")) * time.Second
+
+	echoInstance.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"https://edu-malaysia.now.sh"},
+	}))
 
 	echoInstance.GET("/ping", func(c echo.Context) error {
 		return c.String(http.StatusOK, "pong user")
