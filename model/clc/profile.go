@@ -28,7 +28,7 @@ type coordinateDetail struct {
 }
 
 type dataSupportDetail struct {
-	TotalStudentPerClc int           `json:"total_student_per_clc" bson:"total_student_per_clc" validate:"required"`
+	TotalStudentPerClc int32         `json:"total_student_per_clc" bson:"total_student_per_clc" validate:"required"`
 	StudentPerClass    []classDetail `json:"student_per_class" bson:"student_per_class"`
 }
 

@@ -37,6 +37,8 @@ func (u *profileUsecase) Create(c context.Context, clc *clcModel.ProfileEntity) 
 		return err
 	}
 
+	clc.ClcLevelDataSupport.TotalStudentPerClc = countTotalStudentCLC(clc)
+
 	if err := utils.Validate(clc); err != nil {
 		return err
 	}
@@ -79,6 +81,8 @@ func (u *profileUsecase) Update(c context.Context, id string, clc *clcModel.Prof
 		return err
 	}
 
+	clc.ClcLevelDataSupport.TotalStudentPerClc = countTotalStudentCLC(clc)
+
 	if err := utils.Validate(clc); err != nil {
 		return err
 	}
@@ -91,6 +95,14 @@ func (u *profileUsecase) Remove(c context.Context, id string) error {
 	defer cancel()
 
 	return u.profileRepo.Remove(ctx, id)
+}
+
+func countTotalStudentCLC(clc *clcModel.ProfileEntity) int32 {
+	totalStudentPerCLC := int(0)
+	for _, k := range clc.ClcLevelDataSupport.StudentPerClass {
+		totalStudentPerCLC += k.TotalClassStudent
+	}
+	return int32(totalStudentPerCLC)
 }
 
 func validateClcLevelDataSupport(level string, dataSupportSize int) error {
