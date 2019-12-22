@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/fidellr/edu_malay/utils"
 	"github.com/globalsign/mgo/bson"
@@ -55,7 +56,17 @@ func (r *ClcMongo) FindAll(ctx context.Context, filter *model.Filter) ([]*clc.Pr
 		query["created_at"] = bson.M{"$lt": createdAt}
 	}
 
-	err := sess.DB(r.DBName).C(clcCollectionName).Find(query).Limit(filter.Num).Sort("-created_at").All(&clcs)
+	col := sess.DB(r.DBName).C(clcCollectionName)
+	if filter.Search != "" {
+		query["$text"] = bson.M{"$search": strings.ToLower(filter.Search)}
+	}
+
+	q := col.Find(query).Sort("-created-at")
+	if filter.Search != "" {
+		q = q.Select(bson.M{"score": bson.M{"$meta": "textScore"}})
+	}
+
+	err := q.Limit(filter.Num).All(&clcs)
 	if err != nil {
 		return clcs, "", err
 	}
@@ -90,4 +101,12 @@ func (r *ClcMongo) Update(ctx context.Context, id string, clc *clc.ProfileEntity
 
 	idBson := bson.ObjectIdHex(id)
 	return sess.DB(r.DBName).C(clcCollectionName).Update(bson.M{"_id": idBson}, clc)
+}
+
+func (r *ClcMongo) Remove(ctx context.Context, id string) error {
+	sess := r.Session.Clone()
+	defer sess.Close()
+
+	idBson := bson.ObjectIdHex(id)
+	return sess.DB(r.DBName).C(clcCollectionName).Remove(bson.M{"_id": idBson})
 }

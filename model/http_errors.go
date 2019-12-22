@@ -15,4 +15,5 @@ type ResponseError struct {
 type Filter struct {
 	Num    int
 	Cursor string
+	Search string
 }

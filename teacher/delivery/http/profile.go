@@ -25,6 +25,7 @@ func NewTeacherProfileHandler(e *echo.Echo, service teacher.ProfileUsecase) {
 	e.GET("/teacher/:id", handler.GetByID)
 	e.POST("/teacher", handler.Create)
 	e.PUT("/teacher/:id", handler.Update)
+	e.POST("/teacher/:id", handler.Remove)
 }
 
 func (h *Handler) FindAll(c echo.Context) error {
@@ -46,6 +47,7 @@ func (h *Handler) FindAll(c echo.Context) error {
 	filter := &model.Filter{
 		Num:    num,
 		Cursor: c.QueryParam("cursor"),
+		Search: c.QueryParam("search"),
 	}
 
 	teachers, nextCursor, err := h.service.FindAll(ctx, filter)
@@ -103,6 +105,19 @@ func (h *Handler) Update(c echo.Context) error {
 	}
 
 	err := h.service.Update(ctx, c.Param("id"), t)
+	if err != nil {
+		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func (h *Handler) Remove(c echo.Context) error {
+	ctx := c.Request().Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	err := h.service.Remove(ctx, c.Param("id"))
 	if err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}

@@ -32,12 +32,12 @@ func (u *profileUsecase) Create(c context.Context, clc *clcModel.ProfileEntity) 
 	clc.CreatedAt = time.Now()
 	clc.UpdatedAt = time.Now()
 
-	if err := utils.Validate(clc); err != nil {
+	err := validateClcLevelDataSupport(clc.ClcLevel, len(clc.ClcLevelDataSupport.StudentPerClass))
+	if err != nil {
 		return err
 	}
 
-	err := validateClcLevelDataSupport(clc.ClcLevel, len(clc.ClcLevelDataSupport.StudentPerClass))
-	if err != nil {
+	if err := utils.Validate(clc); err != nil {
 		return err
 	}
 
@@ -74,11 +74,23 @@ func (u *profileUsecase) Update(c context.Context, id string, clc *clcModel.Prof
 
 	clc.UpdatedAt = time.Now()
 
+	err := validateClcLevelDataSupport(clc.ClcLevel, len(clc.ClcLevelDataSupport.StudentPerClass))
+	if err != nil {
+		return err
+	}
+
 	if err := utils.Validate(clc); err != nil {
 		return err
 	}
 
 	return u.profileRepo.Update(ctx, id, clc)
+}
+
+func (u *profileUsecase) Remove(c context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	return u.profileRepo.Remove(ctx, id)
 }
 
 func validateClcLevelDataSupport(level string, dataSupportSize int) error {

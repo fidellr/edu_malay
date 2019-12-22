@@ -12,4 +12,5 @@ type ProfileRepository interface {
 	FindAll(ctx context.Context, filter *model.Filter) ([]*teacher.ProfileEntity, string, error)
 	GetByID(ctx context.Context, id string) (*teacher.ProfileEntity, error)
 	Update(ctx context.Context, id string, t *teacher.ProfileEntity) error
+	Remove(ctx context.Context, id string) error
 }

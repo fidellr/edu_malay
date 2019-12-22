@@ -73,3 +73,10 @@ func (u *profileUsecase) Update(c context.Context, id string, t *teacherModel.Pr
 
 	return u.profileRepo.Update(ctx, id, t)
 }
+
+func (u *profileUsecase) Remove(c context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+
+	return u.profileRepo.Remove(ctx, id)
+}

@@ -14,6 +14,10 @@
     "dsn":"mongodb://urof6vil9oxnhucannob:Ki4LfGybTNDLolVIIppb@bm9ubph32uanvrr-mongodb.services.clever-cloud.com:27017/bm9ubph32uanvrr",
     "database": "bm9ubph32uanvrr"
   },
+  "bucket_host": {
+    "id": "bucket_5653d162-040d-4d35-a3eb-6813722e0dc9",
+    "version": "0.0.1"
+  },
   "http": {
     "max_idle_conns": 100,
     "max_idle_conns_per_host": 100,

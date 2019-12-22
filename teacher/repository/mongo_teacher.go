@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 
 	"github.com/fidellr/edu_malay/model"
 	"github.com/fidellr/edu_malay/model/teacher"
@@ -53,7 +54,18 @@ func (r *TeacherMongo) FindAll(ctx context.Context, filter *model.Filter) ([]*te
 		query["created_at"] = bson.M{"$lt": createdAt}
 	}
 
-	err := sess.DB(r.DBName).C(teacherCollectionName).Find(query).Limit(filter.Num).Sort("-created_at").All(&teachers)
+	col := sess.DB(r.DBName).C(teacherCollectionName)
+
+	if filter.Search != "" {
+		query["$text"] = bson.M{"$search": strings.ToLower(filter.Search)}
+	}
+
+	q := col.Find(query).Sort("-created-at")
+	if filter.Search != "" {
+		q = q.Select(bson.M{"score": bson.M{"$meta": "textScore"}})
+	}
+
+	err := q.Limit(filter.Num).All(&teachers)
 	if err != nil {
 		return teachers, "", err
 	}
@@ -64,7 +76,6 @@ func (r *TeacherMongo) FindAll(ctx context.Context, filter *model.Filter) ([]*te
 
 	lastData := teachers[len(teachers)-1]
 	nextCursors := utils.EncodeTime(lastData.CreatedAt)
-
 	return teachers, nextCursors, nil
 }
 
@@ -88,4 +99,12 @@ func (r *TeacherMongo) Update(ctx context.Context, id string, t *teacher.Profile
 
 	idBson := bson.ObjectIdHex(id)
 	return sess.DB(r.DBName).C(teacherCollectionName).Update(bson.M{"_id": idBson}, t)
+}
+
+func (r *TeacherMongo) Remove(ctx context.Context, id string) error {
+	sess := r.Session.Clone()
+	defer sess.Close()
+
+	idBson := bson.ObjectIdHex(id)
+	return sess.DB(r.DBName).C(teacherCollectionName).Remove(bson.M{"_id": idBson})
 }

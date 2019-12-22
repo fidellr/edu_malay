@@ -87,6 +87,49 @@ func initEduMalayApplication(e *echo.Echo) {
 		logrus.Fatalln(errors.New("Please provide a mongo database name"))
 	}
 
+	db := masterSession.DB(mongoDatabase)
+	colTeacher := db.C("teacher")
+	teacherIndex := mgo.Index{
+		Key: []string{"$text:first_name", "$text:last_name", "$text:university"},
+		Weights: map[string]int{
+			"first_name": 9,
+			"last_name":  8,
+			"university": 3,
+		},
+		Name: "teacherIndex",
+	}
+	if idx, err := colTeacher.Indexes(); len(idx) > 0 {
+		if err != nil {
+			panic(err)
+		}
+		colTeacher.DropAllIndexes()
+	}
+	err = colTeacher.EnsureIndex(teacherIndex)
+
+	colCLC := db.C("clc")
+	clcIndex := mgo.Index{
+		Key: []string{"$text:name", "$text:clc_level", "$text:status"},
+		Weights: map[string]int{
+			"name":      9,
+			"clc_level": 8,
+			"status":    3,
+		},
+		Name: "clcIndex",
+	}
+
+	if idx, err := colCLC.Indexes(); len(idx) > 0 {
+		if err != nil {
+			panic(err)
+		}
+
+		colCLC.DropAllIndexes()
+	}
+	err = colCLC.EnsureIndex(clcIndex)
+
+	if err != nil {
+		panic(err)
+	}
+
 	tpRepo := teacherProfileRepo.NewTeacherMongo(masterSession, mongoDatabase)
 	tpServices := teacherProfileServices.NewTeacherProfileUsecase(tpRepo, contextTimeout)
 	teacherProfileHTTP.NewTeacherProfileHandler(e, tpServices)

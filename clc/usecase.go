@@ -12,4 +12,5 @@ type ProfileUsecase interface {
 	FindAll(ctx context.Context, filter *model.Filter) ([]*clc.ProfileEntity, string, error)
 	GetByID(ctx context.Context, id string) (*clc.ProfileEntity, error)
 	Update(ctx context.Context, id string, t *clc.ProfileEntity) error
+	Remove(ctx context.Context, id string) error
 }
