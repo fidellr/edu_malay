@@ -19,6 +19,10 @@ import (
 	clcProfileHTTP "github.com/fidellr/edu_malay/clc/delivery/http"
 	clcProfileRepo "github.com/fidellr/edu_malay/clc/repository"
 	clcProfileServices "github.com/fidellr/edu_malay/clc/usecase"
+
+	assemblerProfileHTTP "github.com/fidellr/edu_malay/assembler/profile/delivery/http"
+	assemblerProfileRepo "github.com/fidellr/edu_malay/assembler/profile/repository"
+	assemblerProfileServices "github.com/fidellr/edu_malay/assembler/profile/usecase"
 )
 
 func init() {
@@ -137,6 +141,11 @@ func initEduMalayApplication(e *echo.Echo) {
 	clcRepo := clcProfileRepo.NewClcProfileMongo(masterSession, mongoDatabase)
 	clcServices := clcProfileServices.NewClcProfileUsecase(clcRepo, contextTimeout)
 	clcProfileHTTP.NewClcProfileHandler(e, clcServices)
+
+	assmblrProfileRepo := assemblerProfileRepo.NewProfileAssemblerMongo(masterSession, mongoDatabase)
+	assmblrProfileServices := assemblerProfileServices.NewProfileAssemblerUsecase(assmblrProfileRepo, contextTimeout)
+	assemblerProfileHTTP.NewProfileAssemblerHandler(e, assmblrProfileServices)
+
 	// userRepo := _mongoRepository.NewUserMongo(
 	// 	_mongoRepository.UserSession(masterSession),
 	// 	_mongoRepository.UserDBName(mongoDatabase),
