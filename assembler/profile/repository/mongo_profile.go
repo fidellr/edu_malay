@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/fidellr/edu_malay/model/clc"
@@ -38,41 +39,54 @@ func (r *ProfileAssemblerMongo) Create(ctx context.Context, clcID string, m *ass
 	defer sess.Close()
 
 	var err error
-	var teacherM teacher.ProfileEntity
-	var clcM clc.ProfileEntity
+	var w sync.WaitGroup
+	done := make(chan bool)
+	w.Add(2)
+
 	teacherIdntity := new(assembler.TeacherIdentity)
 	clcIDBson := bson.ObjectIdHex(clcID)
-	done := make(chan bool)
 
-	go func(teacherId bson.ObjectId) {
-		err = sess.DB(r.DBName).C(teacherCollection).Find(bson.M{"_id": teacherId}).One(&teacherM)
-		if err != nil {
-			done <- true
-			return
+	go func(teacherId bson.ObjectId, co chan<- bool) {
+		teacherM := new(teacher.ProfileEntity)
+		if teacherM.ID == "" {
+			err = sess.DB(r.DBName).C(teacherCollection).Find(bson.M{"_id": teacherId}).One(teacherM)
+			if err != nil {
+				w.Done()
+				co <- true
+				return
+			}
+
+			teacherIdntity.ID = teacherM.ID
+			teacherIdntity.FirstName = teacherM.FirstName
+			teacherIdntity.LastName = teacherM.LastName
+			teacherIdntity.Gender = teacherM.Gender
+			teacherIdntity.StartWorkDate = m.StartWorkDate
 		}
-		done <- true
-	}(m.TeacherID)
+		w.Done()
+		co <- true
+	}(m.TeacherID, done)
 
-	go func(clcID string) {
-		err = sess.DB(r.DBName).C(clcCollection).Find(bson.M{"_id": clcIDBson}).One(&clcM)
-		if err != nil {
-			done <- true
-			return
+	go func(co chan<- bool) {
+		clcM := new(clc.ProfileEntity)
+		if clcM.ID == "" {
+			err = sess.DB(r.DBName).C(clcCollection).Find(bson.M{"_id": clcIDBson}).One(clcM)
+			if err != nil {
+				w.Done()
+				co <- true
+				return
+			}
 		}
 
-		done <- true
-	}(clcID)
+		w.Done()
+		co <- true
+	}(done)
 
-	if d, _ := <-done; d {
+	w.Wait()
+	if d := <-done; d {
 		if err != nil {
 			return err
 		}
 
-		teacherIdntity.ID = teacherM.ID
-		teacherIdntity.FirstName = teacherM.FirstName
-		teacherIdntity.LastName = teacherM.LastName
-		teacherIdntity.Gender = teacherM.Gender
-		teacherIdntity.StartWorkDate = m.StartWorkDate
 		err = sess.DB(r.DBName).C(profileAssemblerCollection).Update(bson.M{"clc_id": clcIDBson}, bson.M{"$addToSet": bson.M{"teachers": teacherIdntity}})
 		if err == mgo.ErrNotFound {
 			assemblerEnt := new(assembler.ProfileAssemblerEntity)
@@ -105,6 +119,41 @@ func (r *ProfileAssemblerMongo) FetchAll(ctx context.Context) ([]*assembler.Prof
 	return assembledProfileEnt, err
 }
 
+func (r *ProfileAssemblerMongo) GetByID(ctx context.Context, id string) (*assembler.ProfileAssemblerEntity, error) {
+	sess := r.Session.Clone()
+	defer sess.Close()
+	assembledProfileEnt := new(assembler.ProfileAssemblerEntity)
+
+	idBson := bson.ObjectIdHex(id)
+	err := sess.DB(r.DBName).C(profileAssemblerCollection).Find(bson.M{"_id": idBson}).One(assembledProfileEnt)
+	if err != nil {
+		return assembledProfileEnt, err
+	}
+
+	return assembledProfileEnt, nil
+}
+
+func (r *ProfileAssemblerMongo) Update(ctx context.Context, id string, teacherParam *assembler.ProfileAssemblerParam, isEditing bool) error {
+	sess := r.Session.Clone()
+	defer sess.Close()
+	idBson := bson.ObjectIdHex(id)
+
+	if !isEditing {
+		err := sess.DB(r.DBName).C(profileAssemblerCollection).Update(bson.M{"_id": idBson}, bson.M{"$pull": bson.M{"teachers": bson.M{"_id": teacherParam.TeacherID}}})
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err := sess.DB(r.DBName).C(profileAssemblerCollection).Update(bson.M{"_id": idBson, "teachers._id": teacherParam.TeacherID}, bson.M{"$set": bson.M{"teachers.$.start_work_date": teacherParam.StartWorkDate}})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ProfileAssemblerMongo) Remove(ctx context.Context, assmblrProfileID string) error {
 	sess := r.Session.Clone()
 	defer sess.Close()
@@ -112,6 +161,7 @@ func (r *ProfileAssemblerMongo) Remove(ctx context.Context, assmblrProfileID str
 	idBson := bson.ObjectIdHex(assmblrProfileID)
 	err := sess.DB(r.DBName).C(profileAssemblerCollection).Remove(bson.M{"_id": idBson})
 	if err != nil {
+
 		return err
 	}
 

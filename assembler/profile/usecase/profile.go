@@ -33,6 +33,18 @@ func (u *profileAssemblerUsecase) FetchAll(c context.Context) ([]*assemblerM.Pro
 	return u.profileAssemblerRepo.FetchAll(ctx)
 }
 
+func (u *profileAssemblerUsecase) GetByID(c context.Context, id string) (*assemblerM.ProfileAssemblerEntity, error) {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+	return u.profileAssemblerRepo.GetByID(ctx, id)
+}
+
+func (u *profileAssemblerUsecase) Update(c context.Context, id string, teacherParam *assemblerM.ProfileAssemblerParam, isEditing bool) error {
+	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
+	defer cancel()
+	return u.profileAssemblerRepo.Update(ctx, id, teacherParam, isEditing)
+}
+
 func (u *profileAssemblerUsecase) Remove(c context.Context, assmblrProfileID string) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
