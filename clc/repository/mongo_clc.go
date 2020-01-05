@@ -120,6 +120,11 @@ func (r *ClcMongo) AssembleProfile(ctx context.Context, clcID, teacherID, startD
 		return err
 	}
 
+	err = sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": teacherIDBson}, bson.M{"$set": bson.M{"is_assembled": true}})
+	if err != nil {
+		return err
+	}
+
 	mT.StartWorkDate = startDate
 	err = sess.DB(r.DBName).C(clcCollectionName).Update(bson.M{"_id": clcIDBson}, bson.M{"$addToSet": bson.M{"teachers": mT}})
 	if err != nil {
