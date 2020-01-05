@@ -21,6 +21,7 @@ type ProfileEntity struct {
 	Major            string        `json:"major" bson:"major" validate:"required"`
 	YearOfDedication string        `json:"year_of_dedication" bson:"year_of_dedication" validate:"required"`
 	StartWorkDate    string        `json:"start_work_date" bson:"start_work_date"`
+	MapelUtama       string        `json:"mapel_utama" bson:"mapel_utama"`
 	IsAssembled      bool          `json:"is_assembled" bson:"is_assembled"`
 }
 

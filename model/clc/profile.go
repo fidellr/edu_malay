@@ -16,7 +16,7 @@ type ProfileEntity struct {
 	ClcLevel            string                      `json:"clc_level" bson:"clc_level" validate:"oneof=clc_sd clc_smp"`
 	ClcLevelDataSupport dataSupportDetail           `json:"clc_level_data_support" bson:"clc_level_data_support"`
 	Status              string                      `json:"status" bson:"status" validate:"oneof=ladang non_ladang"`
-	Gugus               string                      `json:"gugus" bson:"gugus" validate:"required,oneof=I II III IV VI VII VIII IX X XI XII XIII XIV sarawak"`
+	Gugus               string                      `json:"gugus" bson:"gugus" validate:"required,oneof=i ii iii iv v vi vii viii ix x xi xii xiii xiv sarawak"`
 	Logo                string                      `json:"logo" bson:"logo"`
 	Coordinate          coordinateDetail            `json:"coordinate" bson:"coordinate"`
 	Teachers            []assembler.TeacherIdentity `json:"teachers" bson:"teachers"`
