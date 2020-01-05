@@ -4,6 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/fidellr/edu_malay/model/assembler"
+
+	"github.com/fidellr/edu_malay/model/teacher"
+
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 
@@ -101,6 +105,46 @@ func (r *ClcMongo) Update(ctx context.Context, id string, clc *clc.ProfileEntity
 
 	idBson := bson.ObjectIdHex(id)
 	return sess.DB(r.DBName).C(clcCollectionName).Update(bson.M{"_id": idBson}, clc)
+}
+
+func (r *ClcMongo) AssembleProfile(ctx context.Context, clcID, teacherID, startDate string) error {
+	sess := r.Session.Clone()
+	defer sess.Close()
+
+	clcIDBson := bson.ObjectIdHex(clcID)
+	teacherIDBson := bson.ObjectIdHex(teacherID)
+
+	var mT *teacher.ProfileEntity
+	err := sess.DB(r.DBName).C("teacher").Find(bson.M{"_id": teacherIDBson}).One(&mT)
+	if err == mgo.ErrNotFound {
+		return err
+	}
+
+	mT.StartWorkDate = startDate
+	err = sess.DB(r.DBName).C(clcCollectionName).Update(bson.M{"_id": clcIDBson}, bson.M{"$addToSet": bson.M{"teachers": mT}})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ClcMongo) UpdateAssembledProfile(ctx context.Context, clcID string, m *assembler.TeacherIdentity, isEditing bool) error {
+	sess := r.Session.Copy()
+	defer sess.Close()
+	query := make(bson.M)
+	selectorQuery := make(bson.M)
+
+	clcIDBson := bson.ObjectIdHex(clcID)
+	if !isEditing {
+		selectorQuery["_id"] = clcIDBson
+		query["$pull"] = bson.M{"teachers": bson.M{"_id": m.ID}}
+	} else {
+		selectorQuery = bson.M{"_id": clcIDBson, "teachers._id": m.ID}
+		query["$set"] = bson.M{"teachers.$.start_work_date": m.StartWorkDate}
+	}
+
+	return sess.DB(r.DBName).C(clcCollectionName).Update(selectorQuery, query)
 }
 
 func (r *ClcMongo) Remove(ctx context.Context, id string) error {

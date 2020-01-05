@@ -41,6 +41,7 @@ func ToMinio(ctx context.Context, minioClient *minio.Client, file *os.File, args
 		return "", err
 	}
 
+	// minioClient.PresignedGetObject(bucketName, objectName)
 	fmt.Printf("Successfully uploaded %s of size %d\n", objectName, n)
 	return objectName, nil
 }
