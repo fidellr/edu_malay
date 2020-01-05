@@ -144,6 +144,10 @@ func (r *ClcMongo) UpdateAssembledProfile(ctx context.Context, clcID string, m *
 	if !isEditing {
 		selectorQuery["_id"] = clcIDBson
 		query["$pull"] = bson.M{"teachers": bson.M{"_id": m.ID}}
+		err := sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": m.ID}, bson.M{"$set": bson.M{"is_assembled": false}})
+		if err != nil {
+			return err
+		}
 	} else {
 		selectorQuery = bson.M{"_id": clcIDBson, "teachers._id": m.ID}
 		query["$set"] = bson.M{"teachers.$.start_work_date": m.StartWorkDate}
