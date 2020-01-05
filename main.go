@@ -9,8 +9,13 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/minio/minio-go"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	pictHTTP "github.com/fidellr/edu_malay/pict/delivery/http"
+	pictRepo "github.com/fidellr/edu_malay/pict/repository"
+	pictServices "github.com/fidellr/edu_malay/pict/usecase"
 
 	teacherProfileHTTP "github.com/fidellr/edu_malay/teacher/delivery/http"
 	teacherProfileRepo "github.com/fidellr/edu_malay/teacher/repository"
@@ -133,6 +138,32 @@ func initEduMalayApplication(e *echo.Echo) {
 	if err != nil {
 		panic(err)
 	}
+
+	// masterS3Cfg := &aws.Config{
+	// 	Region: aws.String("US"),
+	// 	Credentials: credentials.NewStaticCredentials(
+	// 		"GELA5TBFIZLBWZXT648T",
+	// 		"yrj9EDq1oZPLQIrM04GsSdpyu7dB0ePkzcTuneBi",
+	// 		"",
+	// 	),
+	// }
+
+	// masterS3Session, err := session.NewSession(masterS3Cfg)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	endpointHost := "cellar-c2.services.clever-cloud.com"
+	awsAccessKeyID := "GELA5TBFIZLBWZXT648T"
+	awsSecretKey := "yrj9EDq1oZPLQIrM04GsSdpyu7dB0ePkzcTuneBi"
+	minioClient, err := minio.New(endpointHost, awsAccessKeyID, awsSecretKey, true)
+	if err != nil {
+		panic(err)
+	}
+
+	picRepo := pictRepo.NewS3Pict(minioClient)
+	picServices := pictServices.NewPictUsecase(picRepo, contextTimeout)
+	pictHTTP.NewPictHandler(e, picServices)
 
 	tpRepo := teacherProfileRepo.NewTeacherMongo(masterSession, mongoDatabase)
 	tpServices := teacherProfileServices.NewTeacherProfileUsecase(tpRepo, contextTimeout)

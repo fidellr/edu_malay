@@ -3,23 +3,26 @@ package clc
 import (
 	"time"
 
+	"github.com/fidellr/edu_malay/model/assembler"
+
 	"github.com/globalsign/mgo/bson"
 )
 
 type ProfileEntity struct {
-	ID                  bson.ObjectId     `json:"id,omitempty" bson:"_id,omitempty"`
-	CreatedAt           time.Time         `json:"created_at" bson:"created_at"`
-	UpdatedAt           time.Time         `json:"updated_at" bson:"updated_at"`
-	Name                string            `json:"name" bson:"name" validate:"required"`
-	ClcLevel            string            `json:"clc_level" bson:"clc_level" validate:"oneof=clc_sd clc_smp"`
-	ClcLevelDataSupport dataSupportDetail `json:"clc_level_data_support" bson:"clc_level_data_support"`
-	Status              string            `json:"status" bson:"status" validate:"oneof=ladang non_ladang"`
-	Gugus               string            `json:"gugus" bson:"gugus" validate:"required,oneof=I II III IV VI VII VIII IX X XI XII XIII XIV sarawak"`
-	Logo                string            `json:"logo" bson:"logo"`
-	Coordinate          coordinateDetail  `json:"coordinate" bson:"coordinate"`
-	Note                string            `json:"note" bson:"note"`
-	Vakum               bool              `json:"vakum" bson:"vakum"`
-	Permit              string            `json:"permit" bson:"permit"`
+	ID                  bson.ObjectId               `json:"id,omitempty" bson:"_id,omitempty"`
+	CreatedAt           time.Time                   `json:"created_at" bson:"created_at"`
+	UpdatedAt           time.Time                   `json:"updated_at" bson:"updated_at"`
+	Name                string                      `json:"name" bson:"name" validate:"required"`
+	ClcLevel            string                      `json:"clc_level" bson:"clc_level" validate:"oneof=clc_sd clc_smp"`
+	ClcLevelDataSupport dataSupportDetail           `json:"clc_level_data_support" bson:"clc_level_data_support"`
+	Status              string                      `json:"status" bson:"status" validate:"oneof=ladang non_ladang"`
+	Gugus               string                      `json:"gugus" bson:"gugus" validate:"required,oneof=I II III IV VI VII VIII IX X XI XII XIII XIV sarawak"`
+	Logo                string                      `json:"logo" bson:"logo"`
+	Coordinate          coordinateDetail            `json:"coordinate" bson:"coordinate"`
+	Teachers            []assembler.TeacherIdentity `json:"teachers" bson:"teachers"`
+	Note                string                      `json:"note" bson:"note"`
+	Vakum               bool                        `json:"vakum" bson:"vakum"`
+	Permit              string                      `json:"permit" bson:"permit"`
 }
 
 type coordinateDetail struct {

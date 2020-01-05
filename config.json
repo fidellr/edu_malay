@@ -14,8 +14,10 @@
     "dsn":"mongodb://urof6vil9oxnhucannob:Ki4LfGybTNDLolVIIppb@bm9ubph32uanvrr-mongodb.services.clever-cloud.com:27017/bm9ubph32uanvrr",
     "database": "bm9ubph32uanvrr"
   },
-  "bucket_host": {
-    "id": "bucket_5653d162-040d-4d35-a3eb-6813722e0dc9",
+  "cellar_s3": {
+    "host": "cellar-c2.services.clever-cloud.com",
+    "key_id": "GELA5TBFIZLBWZXT648T",
+    "key_secret": "yrj9EDq1oZPLQIrM04GsSdpyu7dB0ePkzcTuneBi",
     "version": "0.0.1"
   },
   "http": {

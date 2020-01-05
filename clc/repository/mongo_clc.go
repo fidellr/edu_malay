@@ -4,13 +4,13 @@ import (
 	"context"
 	"strings"
 
-	"github.com/fidellr/edu_malay/utils"
+	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 
 	"github.com/fidellr/edu_malay/model"
 
 	"github.com/fidellr/edu_malay/model/clc"
-	"github.com/globalsign/mgo"
+	"github.com/fidellr/edu_malay/utils"
 )
 
 type ClcMongo struct {
