@@ -3,8 +3,7 @@ package repository
 import (
 	"context"
 	"strings"
-
-	"github.com/fidellr/edu_malay/model/assembler"
+	"time"
 
 	"github.com/fidellr/edu_malay/model/teacher"
 
@@ -120,7 +119,7 @@ func (r *ClcMongo) AssembleProfile(ctx context.Context, clcID, teacherID, startD
 		return err
 	}
 
-	err = sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": teacherIDBson}, bson.M{"$set": bson.M{"is_assembled": true}})
+	err = sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": teacherIDBson}, bson.M{"$set": bson.M{"updated_at": time.Now(), "start_work_date": startDate, "is_assembled": true}})
 	if err != nil {
 		return err
 	}
@@ -134,23 +133,28 @@ func (r *ClcMongo) AssembleProfile(ctx context.Context, clcID, teacherID, startD
 	return nil
 }
 
-func (r *ClcMongo) UpdateAssembledProfile(ctx context.Context, clcID string, m *assembler.TeacherIdentity, isEditing bool) error {
+func (r *ClcMongo) UpdateAssembledProfile(ctx context.Context, clcID, teacherID, startWorkDate string, isEditing bool) error {
 	sess := r.Session.Copy()
 	defer sess.Close()
 	query := make(bson.M)
 	selectorQuery := make(bson.M)
 
 	clcIDBson := bson.ObjectIdHex(clcID)
+	teacherIDBson := bson.ObjectIdHex(teacherID)
 	if !isEditing {
 		selectorQuery["_id"] = clcIDBson
-		query["$pull"] = bson.M{"teachers": bson.M{"_id": m.ID}}
-		err := sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": m.ID}, bson.M{"$set": bson.M{"is_assembled": false}})
+		query["$pull"] = bson.M{"teachers": bson.M{"_id": teacherIDBson}}
+		err := sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": teacherIDBson}, bson.M{"$set": bson.M{"updated_at": time.Now(), "is_assembled": false, "start_work_date": ""}})
 		if err != nil {
 			return err
 		}
 	} else {
-		selectorQuery = bson.M{"_id": clcIDBson, "teachers._id": m.ID}
-		query["$set"] = bson.M{"teachers.$.start_work_date": m.StartWorkDate}
+		selectorQuery = bson.M{"_id": clcIDBson, "teachers._id": teacherIDBson}
+		query["$set"] = bson.M{"teachers.$.start_work_date": startWorkDate}
+		err := sess.DB(r.DBName).C("teacher").Update(bson.M{"_id": teacherIDBson}, bson.M{"$set": bson.M{"updated_at": time.Now(), "start_work_date": startWorkDate}})
+		if err != nil {
+			return err
+		}
 	}
 
 	return sess.DB(r.DBName).C(clcCollectionName).Update(selectorQuery, query)

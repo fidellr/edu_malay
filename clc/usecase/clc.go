@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fidellr/edu_malay/model/assembler"
-
 	"github.com/fidellr/edu_malay/model"
 
 	"github.com/fidellr/edu_malay/utils"
@@ -99,11 +97,11 @@ func (u *profileUsecase) AssembleProfile(c context.Context, clcID, teacherID, st
 	return u.profileRepo.AssembleProfile(ctx, clcID, teacherID, startDate)
 }
 
-func (u *profileUsecase) UpdateAssembledProfile(c context.Context, clcID string, m *assembler.TeacherIdentity, isEditing bool) error {
+func (u *profileUsecase) UpdateAssembledProfile(c context.Context, clcID, teacherID, startWorkDate string, isEditing bool) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	return u.profileRepo.UpdateAssembledProfile(ctx, clcID, m, isEditing)
+	return u.profileRepo.UpdateAssembledProfile(ctx, clcID, teacherID, startWorkDate, isEditing)
 }
 
 func (u *profileUsecase) Remove(c context.Context, id string) error {

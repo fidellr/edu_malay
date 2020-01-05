@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fidellr/edu_malay/model/assembler"
-
 	"github.com/labstack/echo"
 
 	"github.com/fidellr/edu_malay/clc"
@@ -30,7 +28,7 @@ func NewClcProfileHandler(e *echo.Echo, service clc.ProfileUsecase) {
 	e.PUT("/clc/:id", handler.Update)
 	e.POST("/clc/:id", handler.Remove)
 	e.POST("/clc/assemble-profile/:clc_id/:teacher_id/:start_date", handler.AssembleProfile)
-	e.PUT("/clc/assemble-profile/:clc_id", handler.UpdateAssembledProfile)
+	e.PUT("/clc/assemble-profile/:clc_id/:teacher_id", handler.UpdateAssembledProfile)
 }
 
 func (h *Handler) FindAll(c echo.Context) error {
@@ -135,11 +133,6 @@ func (h *Handler) UpdateAssembledProfile(c echo.Context) error {
 		ctx = context.Background()
 	}
 
-	teacherM := new(assembler.TeacherIdentity)
-	if err := c.Bind(teacherM); err != nil {
-		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
-	}
-
 	isEditingS := c.QueryParam("is_editing")
 	var err error
 	var isEditing bool
@@ -150,7 +143,12 @@ func (h *Handler) UpdateAssembledProfile(c echo.Context) error {
 		}
 	}
 
-	err = h.service.UpdateAssembledProfile(ctx, c.Param("clc_id"), teacherM, isEditing)
+	startDate := c.QueryParam("start_date")
+	if isEditing && startDate == "" {
+		return c.JSON(http.StatusBadRequest, model.ResponseError{Message: "editing required start_date queryparam :D"})
+	}
+
+	err = h.service.UpdateAssembledProfile(ctx, c.Param("clc_id"), c.Param("teacher_id"), startDate, isEditing)
 	if err != nil {
 		return c.JSON(utils.GetStatusCode(err), model.ResponseError{Message: err.Error()})
 	}
